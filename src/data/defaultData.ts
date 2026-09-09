@@ -341,8 +341,9 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   nagadNumber: '01789322199 (মারকাযুল ইহসান অফিসিয়াল)',
   rocketNumber: '01789322199-5 (মারকাযুল ইহসান)',
   bankAccountDetails: 'হিসাবের নাম: Madrasa Markazul Ihsan Dhaka | ব্যাংক: আল-আরাফাহ ইসলামী ব্যাংক লি., যাত্রাবাড়ী শাখা, ঢাকা | হিসাব নং: 0123456789012 | রাউটিং নং: 015273185',
-  googleSheetWebAppUrl: '',
-  googleAppsScriptUrl: '',
+  googleSheetWebAppUrl: 'https://script.google.com/macros/s/AKfycbyde6RbBWzj3nFFxDLI0PAIYYrT3PAN4KaG9Ty9CSdVbSiDNYBycRIbqcotzgQDSjvIXw/exec',
+  googleAppsScriptUrl: 'https://script.google.com/macros/s/AKfycbyde6RbBWzj3nFFxDLI0PAIYYrT3PAN4KaG9Ty9CSdVbSiDNYBycRIbqcotzgQDSjvIXw/exec',
+  googleSheetsUrl: 'https://docs.google.com/spreadsheets/d/1bci7R_vI8BIRz9Dv4u3ct2sEhxUPDndD2b-OonPcrHE/edit?usp=drivesdk',
   adminPasswordHash: 'ihsan2026',
   adminPassword: 'ihsan2026',
   facebookPageUrl: 'https://facebook.com',
@@ -940,87 +941,336 @@ export const DEFAULT_MESSAGES: ContactMessage[] = [
 
 export const CODE_GS_SCRIPT = `/**
  * =========================================================================
- * মারকাযুল ইহসান (Markazul Ihsan) - Google Apps Script Backend (Code.gs)
+ * মারকাযুল ইহসান ঢাকা (Madrasa Markazul Ihsan Dhaka)
+ * গুগল অ্যাপস স্ক্রিপ্ট ব্যাকএন্ড (Code.gs)
  * =========================================================================
- * এই স্ক্রিপ্টটি Google Sheet-কে সম্পূর্ণ ডাটাবেস এবং API ব্যাকএন্ড হিসেবে কাজ করায়।
- * এটি নোটিশ, ভর্তি আবেদন, পরীক্ষার ফলাফল, অনুদান, ব্লগ ও বার্তা ম্যানেজ করে।
+ * অফিসিয়াল গুগল শিট লিংক:
+ * https://docs.google.com/spreadsheets/d/1bci7R_vI8BIRz9Dv4u3ct2sEhxUPDndD2b-OonPcrHE/edit?usp=drivesdk
+ *
+ * ডিফল্ট ওয়েব অ্যাপ ইউআরএল (Web App Exec URL):
+ * https://script.google.com/macros/s/AKfycbyde6RbBWzj3nFFxDLI0PAIYYrT3PAN4KaG9Ty9CSdVbSiDNYBycRIbqcotzgQDSjvIXw/exec
+ *
+ * এই স্ক্রিপ্টটিতে অন্তর্ভুক্ত রয়েছে:
+ * ১. setupSheets() - সকল প্রয়োজনীয় শিট স্বয়ংক্রিয়ভাবে তৈরি করার ফাংশন
+ * ২. setupHeaders() - আকর্ষণীয় কালার, বোল্ড ও ফ্রিজ রো সহ হেডার সেটআপ করার ফাংশন
+ * ৩. donateDeposit() / dogateDeposit() - অনুদান ও ডিপোজিট গ্রহণ ও সংরক্ষণের বিশেষ ফাংশন
+ * ৪. doGet() ও doPost() - ফুল API সাপোর্ট (ভর্তি, রেজাল্ট, নোটিশ, ডোনেশন, মেসেজ, সেটিংস)
+ * ৫. testApi() - এক ক্লিকে স্ক্রিপ্ট টেস্ট করার ফাংশন
  *
  * ব্যবহারের নিয়ম:
- * ১. একটি নতুন Google Sheet খুলুন।
- * ২. Extensions > Apps Script-এ যান।
- * ৩. কোড এডিটরে এই পুরো কোডটি পেস্ট করে সেভ করুন।
- * ৪. Deploy > New deployment > Select type: "Web app"
- * ৫. Description: "Markazul Ihsan API"
- * ৬. Execute as: "Me"
- * ৭. Who has access: "Anyone" (গুরুত্বপূর্ণ!)
- * ৮. Deploy ক্লিক করে Web App URL টি কপি করুন।
- * ৯. মারকাযুল ইহসান এডমিন প্যানেলে "Google Sheets Integration" সেটিংসে URL-টি বসিয়ে Save করুন!
+ * ১. গুগল শিটটি খুলুন (Extensions > Apps Script-এ যান)।
+ * ২. পূর্বের কোড মুছে এই সম্পূর্ণ কোডটি পেস্ট করে Save (Ctrl + S) করুন।
+ * ৩. ওপরের ফাংশন মেনু থেকে "setupSheets" বা "setupHeaders" সিলেক্ট করে "Run" বাটনে চাপুন।
+ * ৪. Deploy > Manage deployments অথবা New deployment এ যান।
+ *    - Type: Web app
+ *    - Execute as: "Me"
+ *    - Who has access: "Anyone" (বাধ্যতামূলক)
+ * ৫. প্রাপ্ত Web App URL টি মারকাযুল ইহসানের এডমিন প্যানেলে বসিয়ে সংরক্ষণ করুন।
  */
 
-// ১৩টি শিটের নামসমূহ
+// শিট আইডি (স্ট্যান্ডঅ্যালোন স্ক্রিপ্ট হিসেবে রান করলেও যাতে একই শিট ব্যবহার হয়)
+const SPREADSHEET_ID = '1bci7R_vI8BIRz9Dv4u3ct2sEhxUPDndD2b-OonPcrHE';
+
+// প্রয়োজনীয় ১৪টি শিটের নামসমূহ
 const SHEETS = {
-  NOTICES: 'Notices',
-  ADMISSIONS: 'Admissions',
-  RESULTS: 'Results',
-  SYLLABUS: 'Syllabus',
-  FEATURES: 'Features',
-  BLOGS: 'Blogs',
-  DONATIONS: 'Donations',
-  MESSAGES: 'Messages',
-  SETTINGS: 'Settings',
-  SLIDER: 'Slider',
-  TEACHERS: 'Teachers',
-  JAMAATS: 'Jamaats',
-  GALLERY: 'Gallery'
+  NOTICES: 'Notices',         // নোটিশ ও বিজ্ঞপ্তি
+  ADMISSIONS: 'Admissions',   // অনলাইন ভর্তি আবেদন
+  RESULTS: 'Results',         // পরীক্ষার ফলাফল ও মার্কশীট
+  DONATIONS: 'Donations',     // দান-অনুদানের হিসাব (খিদমত ফান্ড)
+  DEPOSITS: 'Deposits',       // অনুদান ও ডিপোজিট জমার হিসাব (Voucher/Deposit)
+  SYLLABUS: 'Syllabus',       // সিলেবাস ও কিতাব তালিকা
+  TEACHERS: 'Teachers',       // উস্তাদ ও কর্মকর্তা বৃন্দ
+  JAMAATS: 'Jamaats',         // বিভাগ ও জামাতসমূহ
+  SLIDER: 'Slider',           // ওয়েবসাইট ব্যানার ও স্লাইডার
+  GALLERY: 'Gallery',         // ছবি ও ভিডিও গ্যালারি
+  BLOGS: 'Blogs',             // ইসলামী নিবন্ধ ও বয়ান
+  MESSAGES: 'Messages',       // যোগাযোগ ও অভিযোগ বার্তা
+  SETTINGS: 'Settings',       // ওয়েবসাইট সেটিংস ও সার্বিক তথ্য
+  FEATURES: 'Features'        // মাদ্রাসার অনন্য বৈশিষ্ট্যসমূহ
+};
+
+// সকল শিটের হেডার স্কিমা
+const SHEET_HEADERS = {
+  [SHEETS.NOTICES]: ['id', 'title', 'date', 'category', 'isUrgent', 'content', 'imageUrl', 'pdfUrl', 'publishedBy'],
+  [SHEETS.ADMISSIONS]: ['id', 'studentNameBn', 'studentNameEn', 'fatherName', 'motherName', 'guardianPhone', 'whatsappNumber', 'birthDate', 'academicYear', 'campus', 'department', 'jamaat', 'studentType', 'residenceType', 'address', 'previousInstitute', 'status', 'appliedDate', 'notes'],
+  [SHEETS.RESULTS]: ['id', 'studentName', 'fatherName', 'rollNumber', 'registrationNumber', 'academicYear', 'department', 'jamaat', 'campus', 'totalMarks', 'obtainedTotal', 'gpa', 'division', 'subjectsJson', 'publishedDate', 'remarks'],
+  [SHEETS.DONATIONS]: ['id', 'donorName', 'donorPhone', 'amount', 'fundType', 'paymentMethod', 'trxId', 'bankInfo', 'date', 'isAnonymous', 'status', 'receiptNumber', 'notes'],
+  [SHEETS.DEPOSITS]: ['id', 'voucherNo', 'donorOrDepositor', 'phone', 'amount', 'fundOrCategory', 'paymentMethod', 'accountOrBank', 'trxId', 'date', 'timestamp', 'status', 'remarks'],
+  [SHEETS.SYLLABUS]: ['id', 'department', 'jamaat', 'subjectName', 'bookName', 'authorName', 'totalMarks', 'writtenMark', 'oralMark', 'pdfDownloadUrl'],
+  [SHEETS.TEACHERS]: ['id', 'name', 'designation', 'department', 'qualification', 'experience', 'phone', 'email', 'imageUrl', 'bio', 'order', 'isActive'],
+  [SHEETS.JAMAATS]: ['id', 'name', 'department', 'code', 'capacity', 'monthlyFee', 'description', 'isActive'],
+  [SHEETS.SLIDER]: ['id', 'title', 'subtitle', 'imageUrl', 'badge', 'linkTab', 'order', 'isActive'],
+  [SHEETS.GALLERY]: ['id', 'title', 'category', 'imageUrl', 'imagesJson', 'caption', 'date'],
+  [SHEETS.BLOGS]: ['id', 'title', 'slug', 'category', 'author', 'authorDesignation', 'date', 'readTime', 'imageUrl', 'summary', 'content', 'tags'],
+  [SHEETS.MESSAGES]: ['id', 'name', 'phone', 'email', 'subject', 'message', 'date', 'isRead'],
+  [SHEETS.SETTINGS]: ['Key', 'Value', 'Description'],
+  [SHEETS.FEATURES]: ['id', 'title', 'desc', 'icon']
 };
 
 /**
- * GET রিকোয়েস্ট হ্যান্ডলার: ডাটা রিড করা
+ * গুগল স্প্রেডশিট অবজেক্ট পাওয়ার সহায়ক ফাংশন
+ */
+function getSpreadsheet() {
+  try {
+    const active = SpreadsheetApp.getActiveSpreadsheet();
+    if (active) return active;
+  } catch (err) {
+    // Standalone fallback
+  }
+  return SpreadsheetApp.openById(SPREADSHEET_ID);
+}
+
+/**
+ * =========================================================================
+ * ১. SETUP SHEETS ফাংশন: সকল শিট নিশ্চিত বা তৈরি করার ফাংশন
+ * =========================================================================
+ * Apps Script এ সরাসরি রান করা যায়।
+ */
+function setupSheets() {
+  const ss = getSpreadsheet();
+  Logger.log('=== মারকাযুল ইহসান শিট সেটআপ শুরু ===');
+
+  for (let key in SHEETS) {
+    const sheetName = SHEETS[key];
+    let sheet = ss.getSheetByName(sheetName);
+    if (!sheet) {
+      sheet = ss.insertSheet(sheetName);
+      Logger.log('তৈরি করা হলো শিট: ' + sheetName);
+    }
+  }
+
+  // ডিফল্ট খালি 'Sheet1' থাকলে এবং অন্য শিট থাকলে মুছে ফেলা
+  const defaultSheet = ss.getSheetByName('Sheet1') || ss.getSheetByName('শীট১');
+  if (defaultSheet && ss.getSheets().length > 1 && defaultSheet.getLastRow() === 0) {
+    try {
+      ss.deleteSheet(defaultSheet);
+      Logger.log('খালি Sheet1 মুছে ফেলা হয়েছে।');
+    } catch(e) {
+      // ignore
+    }
+  }
+
+  // হেডার সেটআপ কল করা
+  setupHeaders();
+  Logger.log('=== সকল শিট এবং হেডার সফলভাবে সেটআপ সম্পন্ন হয়েছে! ===');
+  return { status: 'success', message: 'সকল ১৪টি শিট ও হেডার সফলভাবে তৈরি ও কনফিগার হয়েছে!' };
+}
+
+/**
+ * =========================================================================
+ * ২. SETUP HEADERS ফাংশন: প্রতিটি শিটের হেডার ও স্টাইলিং সেটআপ
+ * =========================================================================
+ * প্রতিটি শিটে হেডার বসায়, গাঢ় সবুজ ব্যাকগ্রাউন্ড ও সাদা টেক্সট দিয়ে স্টাইল করে।
+ */
+function setupHeaders() {
+  const ss = getSpreadsheet();
+  Logger.log('=== হেডার সেটআপ শুরু ===');
+
+  for (let key in SHEETS) {
+    const sheetName = SHEETS[key];
+    let sheet = ss.getSheetByName(sheetName);
+    if (!sheet) {
+      sheet = ss.insertSheet(sheetName);
+    }
+
+    const headers = SHEET_HEADERS[sheetName];
+    if (!headers || headers.length === 0) continue;
+
+    // যদি শিট খালি থাকে বা শুধুমাত্র ১ম সারিতে ডেটা না থাকে
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(headers);
+    } else {
+      // প্রথম সারিকে হেডারে রূপান্তর
+      sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    }
+
+    // হেডার ডিজাইন ও স্টাইলিং
+    const headerRange = sheet.getRange(1, 1, 1, headers.length);
+    headerRange
+      .setFontWeight('bold')
+      .setBackground('#064e3b')      // মারকাযুল ইহসান ইসলামিক সবুজ
+      .setFontColor('#ffffff')      // সাদা টেক্সট
+      .setFontFamily('Arial')
+      .setHorizontalAlignment('center');
+
+    // ১ম রো ফ্রিজ করা
+    sheet.setFrozenRows(1);
+
+    // অটো ফিট কলাম
+    for (let c = 1; c <= headers.length; c++) {
+      sheet.autoResizeColumn(c);
+      if (sheet.getColumnWidth(c) < 120) {
+        sheet.setColumnWidth(c, 130);
+      }
+    }
+    Logger.log('হেডার সেট করা হয়েছে: ' + sheetName);
+  }
+
+  Logger.log('=== সকল হেডার ডিজাইন সম্পন্ন! ===');
+  return { status: 'success', message: 'সকল হেডার সফলভাবে ডিজাইন ও লক করা হয়েছে!' };
+}
+
+/**
+ * =========================================================================
+ * ৩. DONATE DEPOSIT (DOGATE DEPOSIT) ফাংশন: অনুদান ও ডিপোজিট সেভ করার ফাংশন
+ * =========================================================================
+ * এটি খিদমত ফান্ড ও ডোনেশনের ডিপোজিট ডেটা 'Donations' ও 'Deposits' উভয় শিটে সেভ করে।
+ */
+function donateDeposit(data) {
+  const ss = getSpreadsheet();
+  initializeSheetsIfMissing(ss);
+
+  // সরাসরি রান করার জন্য ডামি ডেটা তৈরি (যদি data না পাঠানো হয়)
+  if (!data || typeof data !== 'object') {
+    data = {
+      donorName: 'টেস্ট অনুদানকারী',
+      donorPhone: '01789322199',
+      amount: '500',
+      fundType: 'খিদমত ফান্ড (লিল্লাহ)',
+      paymentMethod: 'bKash',
+      trxId: 'TEST' + Date.now().toString().slice(-6),
+      date: Utilities.formatDate(new Date(), 'Asia/Dhaka', 'yyyy-MM-dd'),
+      notes: 'সিস্টেম টেস্ট ডিপোজিট'
+    };
+  }
+
+  const now = new Date();
+  const timestamp = Utilities.formatDate(now, 'Asia/Dhaka', 'yyyy-MM-dd HH:mm:ss');
+  const dateStr = data.date || Utilities.formatDate(now, 'Asia/Dhaka', 'yyyy-MM-dd');
+  const uniqueId = data.id || ('DON-' + Date.now());
+  const voucherNo = data.voucherNo || ('MI-DEP-' + Date.now().toString().slice(-6));
+
+  const donationItem = {
+    id: uniqueId,
+    donorName: data.donorName || data.name || 'বেনামী দানকারী',
+    donorPhone: data.donorPhone || data.phone || '',
+    amount: data.amount || '0',
+    fundType: data.fundType || data.fundOrCategory || 'সাধারণ অনুদান',
+    paymentMethod: data.paymentMethod || 'নগদ / অন্যান্য',
+    trxId: data.trxId || voucherNo,
+    bankInfo: data.bankInfo || data.accountOrBank || '',
+    date: dateStr,
+    isAnonymous: data.isAnonymous ? 'হ্যাঁ' : 'না',
+    status: data.status || 'সফল / অনুমোদিত',
+    receiptNumber: voucherNo,
+    notes: data.notes || data.remarks || ''
+  };
+
+  const depositItem = {
+    id: uniqueId,
+    voucherNo: voucherNo,
+    donorOrDepositor: donationItem.donorName,
+    phone: donationItem.donorPhone,
+    amount: donationItem.amount,
+    fundOrCategory: donationItem.fundType,
+    paymentMethod: donationItem.paymentMethod,
+    accountOrBank: donationItem.bankInfo || donationItem.paymentMethod,
+    trxId: donationItem.trxId,
+    date: dateStr,
+    timestamp: timestamp,
+    status: donationItem.status,
+    remarks: donationItem.notes
+  };
+
+  // ১. Donations শিটে সেভ
+  const donSheet = ss.getSheetByName(SHEETS.DONATIONS);
+  if (donSheet) {
+    appendRowData(donSheet, donationItem);
+  }
+
+  // ২. Deposits শিটে সেভ
+  const depSheet = ss.getSheetByName(SHEETS.DEPOSITS);
+  if (depSheet) {
+    appendRowData(depSheet, depositItem);
+  }
+
+  Logger.log('ডিপোজিট সফল: ' + voucherNo + ' | পরিমাণ: ' + donationItem.amount + ' টাকা');
+
+  return {
+    status: 'success',
+    message: 'আলহামদুলিল্লাহ! অনুদান ও ডিপোজিট সফলভাবে গুগল শিটে সংরক্ষিত হয়েছে।',
+    id: uniqueId,
+    voucherNo: voucherNo,
+    timestamp: timestamp
+  };
+}
+
+// বানানের সুবিধার্থে dogateDeposit অ্যালিয়াস
+function dogateDeposit(data) {
+  return donateDeposit(data);
+}
+
+/**
+ * =========================================================================
+ * ৪. GET রিকোয়েস্ট হ্যান্ডলার: ডাটা রিড করা ও সেটআপ কল করা
+ * =========================================================================
  */
 function doGet(e) {
   try {
-    const action = (e && e.parameter && e.parameter.action) ? e.parameter.action : 'getAll';
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = getSpreadsheet();
     initializeSheetsIfMissing(ss);
 
+    const action = (e && e.parameter && e.parameter.action) ? e.parameter.action : 'getAll';
     let result = {};
 
     if (action === 'getAll') {
       result = {
         status: 'success',
+        spreadsheetUrl: ss.getUrl(),
+        lastUpdated: Utilities.formatDate(new Date(), 'Asia/Dhaka', 'yyyy-MM-dd HH:mm:ss'),
         notices: readSheetData(ss.getSheetByName(SHEETS.NOTICES)),
         admissions: readSheetData(ss.getSheetByName(SHEETS.ADMISSIONS)),
         results: readSheetData(ss.getSheetByName(SHEETS.RESULTS)),
-        syllabus: readSheetData(ss.getSheetByName(SHEETS.SYLLABUS)),
-        features: readSheetData(ss.getSheetByName(SHEETS.FEATURES)),
-        blogs: readSheetData(ss.getSheetByName(SHEETS.BLOGS)),
         donations: readSheetData(ss.getSheetByName(SHEETS.DONATIONS)),
-        messages: readSheetData(ss.getSheetByName(SHEETS.MESSAGES)),
-        slider: readSheetData(ss.getSheetByName(SHEETS.SLIDER)),
+        deposits: readSheetData(ss.getSheetByName(SHEETS.DEPOSITS)),
+        syllabus: readSheetData(ss.getSheetByName(SHEETS.SYLLABUS)),
         teachers: readSheetData(ss.getSheetByName(SHEETS.TEACHERS)),
         jamaats: readSheetData(ss.getSheetByName(SHEETS.JAMAATS)),
+        slider: readSheetData(ss.getSheetByName(SHEETS.SLIDER)),
         gallery: readSheetData(ss.getSheetByName(SHEETS.GALLERY)),
+        blogs: readSheetData(ss.getSheetByName(SHEETS.BLOGS)),
+        messages: readSheetData(ss.getSheetByName(SHEETS.MESSAGES)),
+        features: readSheetData(ss.getSheetByName(SHEETS.FEATURES)),
         settings: readSettingsSheet(ss.getSheetByName(SHEETS.SETTINGS))
       };
-    } else if (action === 'getSlider') {
-      result = { status: 'success', data: readSheetData(ss.getSheetByName(SHEETS.SLIDER)) };
-    } else if (action === 'getTeachers') {
-      result = { status: 'success', data: readSheetData(ss.getSheetByName(SHEETS.TEACHERS)) };
+    } else if (action === 'setupSheets' || action === 'setupSheet') {
+      result = setupSheets();
+    } else if (action === 'setupHeaders' || action === 'setupHeader') {
+      result = setupHeaders();
+    } else if (action === 'donateDeposit' || action === 'dogateDeposit' || action === 'submitDonation') {
+      result = donateDeposit(e.parameter);
     } else if (action === 'getNotices') {
       result = { status: 'success', data: readSheetData(ss.getSheetByName(SHEETS.NOTICES)) };
     } else if (action === 'getResults') {
       result = { status: 'success', data: readSheetData(ss.getSheetByName(SHEETS.RESULTS)) };
+    } else if (action === 'getAdmissions') {
+      result = { status: 'success', data: readSheetData(ss.getSheetByName(SHEETS.ADMISSIONS)) };
+    } else if (action === 'getDonations') {
+      result = { status: 'success', data: readSheetData(ss.getSheetByName(SHEETS.DONATIONS)) };
+    } else if (action === 'getDeposits') {
+      result = { status: 'success', data: readSheetData(ss.getSheetByName(SHEETS.DEPOSITS)) };
+    } else if (action === 'getTeachers') {
+      result = { status: 'success', data: readSheetData(ss.getSheetByName(SHEETS.TEACHERS)) };
+    } else if (action === 'getSlider') {
+      result = { status: 'success', data: readSheetData(ss.getSheetByName(SHEETS.SLIDER)) };
     } else if (action === 'getSyllabus') {
       result = { status: 'success', data: readSheetData(ss.getSheetByName(SHEETS.SYLLABUS)) };
-    } else if (action === 'getFeatures') {
-      result = { status: 'success', data: readSheetData(ss.getSheetByName(SHEETS.FEATURES)) };
+    } else if (action === 'getJamaats') {
+      result = { status: 'success', data: readSheetData(ss.getSheetByName(SHEETS.JAMAATS)) };
     } else if (action === 'getGallery') {
       result = { status: 'success', data: readSheetData(ss.getSheetByName(SHEETS.GALLERY)) };
-    } else if (action === 'setupSheets') {
-      initializeSheetsIfMissing(ss);
-      result = { status: 'success', message: 'সকল শিট কনফিগার সম্পন্ন!' };
+    } else if (action === 'getBlogs') {
+      result = { status: 'success', data: readSheetData(ss.getSheetByName(SHEETS.BLOGS)) };
+    } else if (action === 'getMessages') {
+      result = { status: 'success', data: readSheetData(ss.getSheetByName(SHEETS.MESSAGES)) };
+    } else if (action === 'getSettings') {
+      result = { status: 'success', data: readSettingsSheet(ss.getSheetByName(SHEETS.SETTINGS)) };
     } else {
-      result = { status: 'success', message: 'API is running successfully!' };
+      result = {
+        status: 'success',
+        message: 'মারকাযুল ইহসান ঢাকা Google Apps Script API সচল আছে!',
+        spreadsheetUrl: ss.getUrl()
+      };
     }
 
     return ContentService.createTextOutput(JSON.stringify(result))
@@ -1035,108 +1285,159 @@ function doGet(e) {
 }
 
 /**
- * POST রিকোয়েস্ট হ্যান্ডলার: ডাটা রাইট, আপডেট ও ডিলিট করা
+ * =========================================================================
+ * ৫. POST রিকোয়েস্ট হ্যান্ডলার: ডাটা রাইট, আপডেট, সিঙ্ক ও ডিলিট করা
+ * =========================================================================
  */
 function doPost(e) {
   try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = getSpreadsheet();
     initializeSheetsIfMissing(ss);
 
     let requestData;
     if (e.postData && e.postData.contents) {
-      requestData = JSON.parse(e.postData.contents);
+      try {
+        requestData = JSON.parse(e.postData.contents);
+      } catch (err) {
+        requestData = e.parameter || {};
+      }
     } else if (e.parameter) {
       requestData = e.parameter;
     } else {
-      throw new Error("No payload found");
+      throw new Error("অনুরোধে কোনো ডেটা পাওয়া যায়নি (No payload)");
     }
 
     const action = requestData.action;
-    const payload = requestData.payload;
+    const payload = requestData.payload || requestData;
 
     let response = { status: 'success' };
 
     switch(action) {
+      // অনুদান ও ডিপোজিট সেভ
+      case 'donateDeposit':
+      case 'dogateDeposit':
+      case 'submitDonation':
+      case 'deposit':
+        response = donateDeposit(payload);
+        break;
+
+      // ভর্তি আবেদন
       case 'submitAdmission':
         appendRowData(ss.getSheetByName(SHEETS.ADMISSIONS), payload);
-        response.message = 'ভর্তি আবেদন সফলভাবে গুগল শিটে সংরক্ষিত হয়েছে!';
+        response.message = 'অনলাইন ভর্তি আবেদন সফলভাবে গুগল শিটে সংরক্ষিত হয়েছে!';
         break;
 
-      case 'submitDonation':
-        appendRowData(ss.getSheetByName(SHEETS.DONATIONS), payload);
-        response.message = 'অনুদান তথ্য গুগল শিটে সংরক্ষিত হয়েছে!';
-        break;
-
+      // যোগাযোগ বার্তা
       case 'submitContactMessage':
         appendRowData(ss.getSheetByName(SHEETS.MESSAGES), payload);
         response.message = 'বার্তা সফলভাবে পাঠানো হয়েছে!';
         break;
 
+      // এডমিন প্যানেল থেকে সমস্ত ডেটা এক ক্লিকে গুগল শিটে সিঙ্ক
       case 'syncAllFromAdmin':
-        // সম্পূর্ণ ডেটা এক ক্লিকে গুগল শিটে পুশ ও ব্যাকআপ
         if (payload.notices) overwriteSheetData(ss.getSheetByName(SHEETS.NOTICES), payload.notices);
         if (payload.admissions) overwriteSheetData(ss.getSheetByName(SHEETS.ADMISSIONS), payload.admissions);
         if (payload.results) overwriteSheetData(ss.getSheetByName(SHEETS.RESULTS), payload.results);
-        if (payload.syllabus) overwriteSheetData(ss.getSheetByName(SHEETS.SYLLABUS), payload.syllabus);
-        if (payload.features) overwriteSheetData(ss.getSheetByName(SHEETS.FEATURES), payload.features);
-        if (payload.blogs) overwriteSheetData(ss.getSheetByName(SHEETS.BLOGS), payload.blogs);
         if (payload.donations) overwriteSheetData(ss.getSheetByName(SHEETS.DONATIONS), payload.donations);
-        if (payload.messages) overwriteSheetData(ss.getSheetByName(SHEETS.MESSAGES), payload.messages);
-        if (payload.slider) overwriteSheetData(ss.getSheetByName(SHEETS.SLIDER), payload.slider);
+        if (payload.deposits) overwriteSheetData(ss.getSheetByName(SHEETS.DEPOSITS), payload.deposits);
+        if (payload.syllabus) overwriteSheetData(ss.getSheetByName(SHEETS.SYLLABUS), payload.syllabus);
         if (payload.teachers) overwriteSheetData(ss.getSheetByName(SHEETS.TEACHERS), payload.teachers);
         if (payload.jamaats) overwriteSheetData(ss.getSheetByName(SHEETS.JAMAATS), payload.jamaats);
+        if (payload.slider) overwriteSheetData(ss.getSheetByName(SHEETS.SLIDER), payload.slider);
         if (payload.gallery) overwriteSheetData(ss.getSheetByName(SHEETS.GALLERY), payload.gallery);
+        if (payload.blogs) overwriteSheetData(ss.getSheetByName(SHEETS.BLOGS), payload.blogs);
+        if (payload.messages) overwriteSheetData(ss.getSheetByName(SHEETS.MESSAGES), payload.messages);
+        if (payload.features) overwriteSheetData(ss.getSheetByName(SHEETS.FEATURES), payload.features);
         if (payload.settings) saveSettingsSheet(ss.getSheetByName(SHEETS.SETTINGS), payload.settings);
-        response.message = 'এডমিন প্যানেলের সমস্ত ডাটা গুগল শিটে পুশ ও সিঙ্ক সম্পন্ন হয়েছে!';
+        response.message = 'এডমিন প্যানেলের সমস্ত তথ্য গুগল শিটে সফলভাবে পুশ ও সিঙ্ক হয়েছে!';
         break;
 
+      // একক নোটিশ
       case 'saveNotice':
         upsertRecord(ss.getSheetByName(SHEETS.NOTICES), payload);
-        response.message = 'নোটিশ সংরক্ষিত হয়েছে!';
+        response.message = 'নোটিশ সফলভাবে সংরক্ষিত হয়েছে!';
         break;
-
       case 'deleteNotice':
         deleteRecord(ss.getSheetByName(SHEETS.NOTICES), payload.id);
         response.message = 'নোটিশ মুছে ফেলা হয়েছে!';
         break;
 
+      // একক রেজাল্ট
       case 'saveResult':
         upsertRecord(ss.getSheetByName(SHEETS.RESULTS), payload);
-        response.message = 'ফলাফল সংরক্ষিত হয়েছে!';
+        response.message = 'পরীক্ষার ফলাফল সংরক্ষিত হয়েছে!';
         break;
-
       case 'deleteResult':
         deleteRecord(ss.getSheetByName(SHEETS.RESULTS), payload.id);
         response.message = 'ফলাফল মুছে ফেলা হয়েছে!';
         break;
 
+      // একক সিলেবাস
       case 'saveSyllabus':
         upsertRecord(ss.getSheetByName(SHEETS.SYLLABUS), payload);
         response.message = 'সিলেবাস সংরক্ষিত হয়েছে!';
         break;
-
       case 'deleteSyllabus':
         deleteRecord(ss.getSheetByName(SHEETS.SYLLABUS), payload.id);
         response.message = 'সিলেবাস মুছে ফেলা হয়েছে!';
         break;
 
-      case 'saveFeature':
-        upsertRecord(ss.getSheetByName(SHEETS.FEATURES), payload);
-        response.message = 'মাদ্রাসার বৈশিষ্ট্য সংরক্ষিত হয়েছে!';
+      // একক শিক্ষক
+      case 'saveTeacher':
+        upsertRecord(ss.getSheetByName(SHEETS.TEACHERS), payload);
+        response.message = 'উস্তাদের প্রোফাইল সংরক্ষিত হয়েছে!';
+        break;
+      case 'deleteTeacher':
+        deleteRecord(ss.getSheetByName(SHEETS.TEACHERS), payload.id);
+        response.message = 'উস্তাদের তথ্য মুছে ফেলা হয়েছে!';
         break;
 
-      case 'deleteFeature':
-        deleteRecord(ss.getSheetByName(SHEETS.FEATURES), payload.id);
-        response.message = 'বৈশিষ্ট্য মুছে ফেলা হয়েছে!';
+      // একক স্লাইডার
+      case 'saveSlider':
+        upsertRecord(ss.getSheetByName(SHEETS.SLIDER), payload);
+        response.message = 'স্লাইডার ব্যানার সংরক্ষিত হয়েছে!';
+        break;
+      case 'deleteSlider':
+        deleteRecord(ss.getSheetByName(SHEETS.SLIDER), payload.id);
+        response.message = 'স্লাইডার মুছে ফেলা হয়েছে!';
         break;
 
+      // একক ব্লগ
+      case 'saveBlog':
+        upsertRecord(ss.getSheetByName(SHEETS.BLOGS), payload);
+        response.message = 'নিবন্ধ/ব্লগ সংরক্ষিত হয়েছে!';
+        break;
+      case 'deleteBlog':
+        deleteRecord(ss.getSheetByName(SHEETS.BLOGS), payload.id);
+        response.message = 'ব্লগ মুছে ফেলা হয়েছে!';
+        break;
+
+      // একক জামাত
+      case 'saveJamaat':
+        upsertRecord(ss.getSheetByName(SHEETS.JAMAATS), payload);
+        response.message = 'জামাত/বিভাগ সংরক্ষিত হয়েছে!';
+        break;
+      case 'deleteJamaat':
+        deleteRecord(ss.getSheetByName(SHEETS.JAMAATS), payload.id);
+        response.message = 'জামাত মুছে ফেলা হয়েছে!';
+        break;
+
+      // সেটিংস
       case 'saveSettings':
         saveSettingsSheet(ss.getSheetByName(SHEETS.SETTINGS), payload);
-        response.message = 'সেটিংস সংরক্ষিত হয়েছে!';
+        response.message = 'সাইট সেটিংস সফলভাবে সংরক্ষিত হয়েছে!';
+        break;
+
+      // শিট ও হেডার সেটআপ
+      case 'setupSheets':
+        response = setupSheets();
+        break;
+      case 'setupHeaders':
+        response = setupHeaders();
         break;
 
       default:
-        response.message = 'Action processed.';
+        response.message = 'অনুরোধটি সফলভাবে প্রসেস করা হয়েছে (' + action + ')';
     }
 
     return ContentService.createTextOutput(JSON.stringify(response))
@@ -1151,38 +1452,30 @@ function doPost(e) {
 }
 
 /**
- * শিট না থাকলে স্বয়ংক্রিয়ভাবে হেডার সহ তৈরি করার ফাংশন
+ * =========================================================================
+ * সহায়ক ফাংশনসমূহ (Helpers)
+ * =========================================================================
  */
-function initializeSheetsIfMissing(ss) {
-  const schema = {
-    [SHEETS.NOTICES]: ['id', 'title', 'date', 'category', 'isUrgent', 'content', 'imageUrl', 'pdfUrl', 'publishedBy'],
-    [SHEETS.ADMISSIONS]: ['id', 'studentNameBn', 'studentNameEn', 'fatherName', 'motherName', 'guardianPhone', 'whatsappNumber', 'birthDate', 'academicYear', 'campus', 'department', 'jamaat', 'studentType', 'residenceType', 'address', 'previousInstitute', 'status', 'appliedDate', 'notes'],
-    [SHEETS.RESULTS]: ['id', 'studentName', 'fatherName', 'rollNumber', 'registrationNumber', 'academicYear', 'department', 'jamaat', 'campus', 'totalMarks', 'obtainedTotal', 'gpa', 'division', 'subjectsJson', 'publishedDate', 'remarks'],
-    [SHEETS.SYLLABUS]: ['id', 'department', 'jamaat', 'subjectName', 'bookName', 'authorName', 'totalMarks', 'writtenMark', 'oralMark', 'pdfDownloadUrl'],
-    [SHEETS.FEATURES]: ['id', 'title', 'desc', 'icon'],
-    [SHEETS.BLOGS]: ['id', 'title', 'slug', 'category', 'author', 'authorDesignation', 'date', 'readTime', 'imageUrl', 'summary', 'content', 'tags'],
-    [SHEETS.DONATIONS]: ['id', 'donorName', 'donorPhone', 'amount', 'fundType', 'paymentMethod', 'trxId', 'bankInfo', 'date', 'isAnonymous', 'status'],
-    [SHEETS.MESSAGES]: ['id', 'name', 'phone', 'email', 'subject', 'message', 'date', 'isRead'],
-    [SHEETS.SLIDER]: ['id', 'title', 'subtitle', 'imageUrl', 'badge', 'linkTab', 'order', 'isActive'],
-    [SHEETS.TEACHERS]: ['id', 'name', 'designation', 'department', 'qualification', 'experience', 'phone', 'email', 'imageUrl', 'bio', 'order', 'isActive'],
-    [SHEETS.JAMAATS]: ['id', 'name', 'department', 'code', 'capacity', 'monthlyFee', 'description', 'isActive'],
-    [SHEETS.GALLERY]: ['id', 'title', 'category', 'imageUrl', 'imagesJson', 'caption', 'date'],
-    [SHEETS.SETTINGS]: ['Key', 'Value']
-  };
 
-  for (let sheetName in schema) {
+function initializeSheetsIfMissing(ss) {
+  for (let key in SHEETS) {
+    const sheetName = SHEETS[key];
     let sheet = ss.getSheetByName(sheetName);
     if (!sheet) {
       sheet = ss.insertSheet(sheetName);
-      sheet.appendRow(schema[sheetName]);
-      sheet.getRange(1, 1, 1, schema[sheetName].length).setFontWeight("bold").setBackground("#e6f4ea");
+      const headers = SHEET_HEADERS[sheetName];
+      if (headers) {
+        sheet.appendRow(headers);
+        sheet.getRange(1, 1, 1, headers.length)
+          .setFontWeight('bold')
+          .setBackground('#064e3b')
+          .setFontColor('#ffffff');
+        sheet.setFrozenRows(1);
+      }
     }
   }
 }
 
-/**
- * শিটের ডেটা JSON অবজেক্ট লিস্ট আকারে রিড করা
- */
 function readSheetData(sheet) {
   if (!sheet) return [];
   const rows = sheet.getDataRange().getValues();
@@ -1207,9 +1500,6 @@ function readSheetData(sheet) {
   return items;
 }
 
-/**
- * নতুন সারি যোগ করা
- */
 function appendRowData(sheet, item) {
   if (!sheet) return;
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
@@ -1224,15 +1514,16 @@ function appendRowData(sheet, item) {
   sheet.appendRow(row);
 }
 
-/**
- * শিট ওভাররাইট করে সিঙ্ক করা
- */
 function overwriteSheetData(sheet, dataList) {
   if (!sheet) return;
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   sheet.clearContents();
   sheet.appendRow(headers);
-  sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#e6f4ea");
+  sheet.getRange(1, 1, 1, headers.length)
+    .setFontWeight('bold')
+    .setBackground('#064e3b')
+    .setFontColor('#ffffff');
+  sheet.setFrozenRows(1);
 
   if (!Array.isArray(dataList) || dataList.length === 0) return;
 
@@ -1246,9 +1537,6 @@ function overwriteSheetData(sheet, dataList) {
   sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
 }
 
-/**
- * রেকর্ড আপডেট বা ইনসার্ট করা (ID মিললে আপডেট)
- */
 function upsertRecord(sheet, record) {
   if (!sheet || !record.id) return;
   const rows = sheet.getDataRange().getValues();
@@ -1275,9 +1563,21 @@ function upsertRecord(sheet, record) {
   }
 }
 
-/**
- * সেটিংস শিট রিড করা
- */
+function deleteRecord(sheet, id) {
+  if (!sheet || !id) return;
+  const rows = sheet.getDataRange().getValues();
+  const headers = rows[0];
+  const idIndex = headers.indexOf('id');
+  if (idIndex === -1) return;
+
+  for (let i = rows.length - 1; i >= 1; i--) {
+    if (rows[i][idIndex] == id) {
+      sheet.deleteRow(i + 1);
+      break;
+    }
+  }
+}
+
 function readSettingsSheet(sheet) {
   if (!sheet) return null;
   const rows = sheet.getDataRange().getValues();
@@ -1301,23 +1601,47 @@ function readSettingsSheet(sheet) {
   return settings;
 }
 
-/**
- * সেটিংস শিট সেভ করা
- */
 function saveSettingsSheet(sheet, settingsObj) {
   if (!sheet || !settingsObj) return;
   sheet.clearContents();
-  sheet.appendRow(['Key', 'Value']);
-  sheet.getRange(1, 1, 1, 2).setFontWeight("bold").setBackground("#e6f4ea");
+  sheet.appendRow(['Key', 'Value', 'Description']);
+  sheet.getRange(1, 1, 1, 3)
+    .setFontWeight('bold')
+    .setBackground('#064e3b')
+    .setFontColor('#ffffff');
+  sheet.setFrozenRows(1);
 
   const rows = [];
   for (let k in settingsObj) {
     const val = settingsObj[k];
     const strVal = typeof val === 'object' && val !== null ? JSON.stringify(val) : String(val !== undefined ? val : '');
-    rows.push([k, strVal]);
+    rows.push([k, strVal, 'Auto saved from web app']);
   }
   if (rows.length > 0) {
-    sheet.getRange(2, 1, rows.length, 2).setValues(rows);
+    sheet.getRange(2, 1, rows.length, 3).setValues(rows);
   }
+}
+
+/**
+ * =========================================================================
+ * ৬. TEST API ফাংশন: স্ক্রিপ্ট রান বা টেস্ট করা
+ * =========================================================================
+ */
+function testApi() {
+  Logger.log('মারকাযুল ইহসান ব্যাকএন্ড টেস্ট শুরু...');
+  const setupResult = setupSheets();
+  Logger.log('সেটআপ রেজাল্ট: ' + JSON.stringify(setupResult));
+  const testDeposit = donateDeposit({
+    donorName: 'হাজী মোঃ আব্দুর রহিম',
+    donorPhone: '01712345678',
+    amount: '5000',
+    fundType: 'স্থায়ী ক্যাম্পাস নির্মাণ ফান্ড',
+    paymentMethod: 'Bank Deposit',
+    trxId: 'DEP-' + Math.floor(Math.random() * 90000 + 10000),
+    bankInfo: 'আল-আরাফাহ ইসলামী ব্যাংক লি., যাত্রাবাড়ী শাখা',
+    notes: 'মারকাযুল ইহসান ডেমরা ক্যাম্পাসের জন্য'
+  });
+  Logger.log('টেস্ট ডিপোজিট রেজাল্ট: ' + JSON.stringify(testDeposit));
+  Logger.log('আলহামদুলিল্লাহ, সমস্ত টেস্ট সফলভাবে সম্পন্ন হয়েছে!');
 }
 `;

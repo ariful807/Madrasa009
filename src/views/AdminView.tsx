@@ -748,32 +748,67 @@ export function AdminView({
               </p>
             </div>
 
-            {/* Web App URL Input */}
-            <div className="bg-emerald-50 p-5 rounded-2xl border border-emerald-200 space-y-3">
-              <label className="block text-xs font-bold text-emerald-950 uppercase tracking-wider">
-                আপনার Google Apps Script Web App URL:
-              </label>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <input
-                  type="url"
-                  value={settingsForm.googleAppsScriptUrl}
-                  onChange={e => setSettingsForm({ ...settingsForm, googleAppsScriptUrl: e.target.value })}
-                  placeholder="https://script.google.com/macros/s/.../exec"
-                  className="flex-1 px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-mono bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600"
-                  id="input-gas-url"
-                />
-                <button
-                  type="button"
-                  onClick={handleSaveSettings}
-                  className="px-5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1"
+            {/* Google Sheets & Web App URL Info */}
+            <div className="bg-emerald-50 p-5 rounded-2xl border border-emerald-200 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-emerald-200/80">
+                <div className="space-y-0.5">
+                  <h3 className="text-xs font-bold text-emerald-950 uppercase tracking-wider flex items-center gap-1.5">
+                    <span>গুগল শিট ডাটাবেস লিংক</span>
+                  </h3>
+                  <p className="text-[11px] text-emerald-800 font-mono break-all">
+                    {settingsForm.googleSheetsUrl || 'https://docs.google.com/spreadsheets/d/1bci7R_vI8BIRz9Dv4u3ct2sEhxUPDndD2b-OonPcrHE/edit?usp=drivesdk'}
+                  </p>
+                </div>
+                <a
+                  href={settingsForm.googleSheetsUrl || 'https://docs.google.com/spreadsheets/d/1bci7R_vI8BIRz9Dv4u3ct2sEhxUPDndD2b-OonPcrHE/edit?usp=drivesdk'}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors shrink-0"
                 >
-                  <Save className="w-3.5 h-3.5" />
-                  <span>URL সংরক্ষণ করুন</span>
-                </button>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>গুগল শিট ওপেন করুন</span>
+                </a>
               </div>
-              <p className="text-[11px] text-emerald-800">
-                * Deploy সম্পন্ন করার পর গুগল যে Web App URL টি প্রদান করবে, তা হুবহু উপরে পেস্ট করে "URL সংরক্ষণ করুন" এ চাপুন।
-              </p>
+
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-emerald-950 uppercase tracking-wider">
+                  আপনার Google Apps Script Web App URL:
+                </label>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="url"
+                    value={settingsForm.googleAppsScriptUrl}
+                    onChange={e => setSettingsForm({ ...settingsForm, googleAppsScriptUrl: e.target.value, googleSheetWebAppUrl: e.target.value })}
+                    placeholder="https://script.google.com/macros/s/.../exec"
+                    className="flex-1 px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-mono bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                    id="input-gas-url"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSaveSettings}
+                    className="px-5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1 shrink-0"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    <span>URL সংরক্ষণ করুন</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleTestSync}
+                    className="px-4 py-2 bg-white hover:bg-slate-50 text-emerald-800 font-bold text-xs rounded-xl border border-emerald-300 shadow-xs transition-colors flex items-center justify-center gap-1 shrink-0"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>কানেকশন টেস্ট</span>
+                  </button>
+                </div>
+                {syncStatus && (
+                  <p className="text-[11px] font-semibold text-emerald-800 bg-white/70 px-3 py-1 rounded-lg border border-emerald-200 inline-block">
+                    {syncStatus}
+                  </p>
+                )}
+                <p className="text-[11px] text-emerald-800">
+                  * Deploy সম্পন্ন করার পর গুগল যে Web App URL টি প্রদান করবে, তা হুবহু উপরে পেস্ট করে "URL সংরক্ষণ করুন" এ চাপুন।
+                </p>
+              </div>
             </div>
 
             {/* Step-by-Step Setup Guide in Bangla */}
@@ -1303,7 +1338,34 @@ export function AdminView({
                 <span>৮. গুগল শিট ও Apps Script ওয়েব অ্যাপ ইউআরএল</span>
                 {syncStatus && <span className="text-[11px] font-normal text-emerald-700">{syncStatus}</span>}
               </h3>
-              <div className="space-y-3">
+
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-slate-700">
+                  গুগল শিট লিংক (Google Sheets URL)
+                </label>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="url"
+                    value={settingsForm.googleSheetsUrl || ''}
+                    onChange={e => setSettingsForm({ ...settingsForm, googleSheetsUrl: e.target.value })}
+                    placeholder="https://docs.google.com/spreadsheets/d/.../edit"
+                    className="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-600 bg-white"
+                  />
+                  {settingsForm.googleSheetsUrl && (
+                    <a
+                      href={settingsForm.googleSheetsUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-4 py-2 bg-emerald-800 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-1.5 shrink-0"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>শিট খুলুন</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
                 <label className="block text-xs font-semibold text-slate-700">
                   Google Apps Script Web App URL (Exec Link)
                 </label>

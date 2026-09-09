@@ -246,6 +246,7 @@ export interface SiteSettings {
   bankAccountDetails: string;
   googleSheetWebAppUrl: string;
   googleAppsScriptUrl?: string;
+  googleSheetsUrl?: string;
   adminPasswordHash: string;
   adminPassword?: string;
   facebookPageUrl?: string;

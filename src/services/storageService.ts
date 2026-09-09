@@ -66,11 +66,22 @@ export const storageService = {
   // Settings
   getSettings(): SiteSettings {
     const stored = getFromStorage<SiteSettings>(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
+    const result = { ...DEFAULT_SETTINGS, ...stored };
+    if (!result.googleSheetWebAppUrl || result.googleSheetWebAppUrl.trim() === '') {
+      result.googleSheetWebAppUrl = DEFAULT_SETTINGS.googleSheetWebAppUrl;
+    }
+    if (!result.googleAppsScriptUrl || result.googleAppsScriptUrl.trim() === '') {
+      result.googleAppsScriptUrl = DEFAULT_SETTINGS.googleAppsScriptUrl;
+    }
+    if (!result.googleSheetsUrl || result.googleSheetsUrl.trim() === '') {
+      result.googleSheetsUrl = DEFAULT_SETTINGS.googleSheetsUrl;
+    }
+
     if ((stored as any).isUserCustomized) {
-      return { ...DEFAULT_SETTINGS, ...stored };
+      return result;
     }
     if (!stored.madrasaNameBn || stored.madrasaNameBn === 'মারকাযুল ইহসান' || (stored.founderName && stored.founderName.includes('আব্দুল্লাহ আল-মামুন'))) {
-      const merged = { ...DEFAULT_SETTINGS, ...stored, 
+      const merged = { ...result, 
         madrasaNameBn: DEFAULT_SETTINGS.madrasaNameBn,
         madrasaNameEn: DEFAULT_SETTINGS.madrasaNameEn,
         founderName: DEFAULT_SETTINGS.founderName,
@@ -84,7 +95,7 @@ export const storageService = {
       saveToStorage(STORAGE_KEYS.SETTINGS, merged);
       return merged;
     }
-    return { ...DEFAULT_SETTINGS, ...stored };
+    return result;
   },
   saveSettings(settings: SiteSettings): void {
     saveToStorage(STORAGE_KEYS.SETTINGS, { ...settings, isUserCustomized: true });
