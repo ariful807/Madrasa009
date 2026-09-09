@@ -9,9 +9,11 @@ import {
   Building2, 
   Globe, 
   CheckCircle2, 
-  Check 
+  Check,
+  AlertCircle
 } from 'lucide-react';
-import { SiteSettings } from '../types';
+import { SiteSettings, ContactMessage } from '../types';
+import { storageService } from '../services/storageService';
 
 interface ContactViewProps {
   settings: SiteSettings;
@@ -26,15 +28,32 @@ export function ContactView({ settings }: ContactViewProps) {
   });
 
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.phone || !formData.message) {
-      alert('অনুগ্রহ করে নাম, ফোন নম্বর ও বার্তা লিখুন।');
+    setErrorMessage('');
+    if (!formData.name.trim() || !formData.phone.trim() || !formData.message.trim()) {
+      setErrorMessage('অনুগ্রহ করে নাম, মোবাইল নম্বর ও আপনার বার্তা লিখুন।');
       return;
     }
-    setIsSubmitted(true);
-    setFormData({ name: '', phone: '', subject: '', message: '' });
+
+    try {
+      const newMsg: ContactMessage = {
+        id: `msg-${Date.now()}`,
+        name: formData.name.trim(),
+        phone: formData.phone.trim(),
+        subject: formData.subject.trim() || 'সাধারণ যোগাযোগ',
+        message: formData.message.trim(),
+        date: new Date().toLocaleDateString('bn-BD'),
+        isRead: false
+      };
+      storageService.submitMessage(newMsg);
+      setIsSubmitted(true);
+      setFormData({ name: '', phone: '', subject: '', message: '' });
+    } catch (err) {
+      setErrorMessage('বার্তা সংরক্ষণ করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।');
+    }
   };
 
   return (
@@ -206,6 +225,12 @@ export function ContactView({ settings }: ContactViewProps) {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
+              {errorMessage && (
+                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs font-semibold text-rose-800 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+                  <span>{errorMessage}</span>
+                </div>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">

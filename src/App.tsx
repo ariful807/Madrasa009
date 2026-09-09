@@ -10,7 +10,6 @@ import { storageService } from './services/storageService';
 // Layout Components
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
-import { UrgentNoticeTicker } from './components/UrgentNoticeTicker';
 import { NoticeModal } from './components/NoticeModal';
 
 // Views

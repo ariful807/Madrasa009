@@ -9,7 +9,8 @@ import {
   Printer,
   Download,
   Loader2,
-  CreditCard
+  CreditCard,
+  AlertCircle
 } from 'lucide-react';
 import { SiteSettings, StudentApplication, JamaatItem, AdmissionFormField } from '../types';
 import { storageService } from '../services/storageService';
@@ -48,11 +49,13 @@ export function AdmissionView({ settings, jamaats = [] }: AdmissionViewProps) {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedApp, setSubmittedApp] = useState<StudentApplication | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const [isDownloadingReceipt, setIsDownloadingReceipt] = useState(false);
   const slipRef = useRef<HTMLDivElement>(null);
 
   const handleFieldChange = (fieldId: string, value: any) => {
     setFormValues(prev => ({ ...prev, [fieldId]: value }));
+    if (formError) setFormError(null);
   };
 
   const handleDownloadReceipt = async () => {
@@ -69,11 +72,14 @@ export function AdmissionView({ settings, jamaats = [] }: AdmissionViewProps) {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    setFormError(null);
 
     // Check required fields
     for (const f of formFields) {
       if (f.required && (!formValues[f.id] || formValues[f.id].toString().trim() === '')) {
-        alert(`অনুগ্রহ করে "${f.label}" পূরণ করুন।`);
+        setFormError(`অনুগ্রহ করে "${f.label}" পূরণ করুন।`);
+        const el = document.getElementById(`input-${f.id}`);
+        if (el) el.focus();
         return;
       }
     }
@@ -111,7 +117,7 @@ export function AdmissionView({ settings, jamaats = [] }: AdmissionViewProps) {
       setSubmittedApp(newApp);
     } catch (err) {
       console.error(err);
-      alert('আবেদন জমা দিতে সমস্যা হয়েছে। আবার চেষ্টা করুন।');
+      setFormError('আবেদন জমা দিতে সমস্যা হয়েছে। আবার চেষ্টা করুন।');
     } finally {
       setIsSubmitting(false);
     }
@@ -258,6 +264,12 @@ export function AdmissionView({ settings, jamaats = [] }: AdmissionViewProps) {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6" id="admission-application-form">
+            {formError && (
+              <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl text-xs sm:text-sm font-semibold text-rose-800 flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 shrink-0 text-rose-600" />
+                <span>{formError}</span>
+              </div>
+            )}
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               {formFields.map((field) => {

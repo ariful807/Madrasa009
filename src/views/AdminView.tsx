@@ -134,6 +134,12 @@ export function AdminView({
   const [isCopied, setIsCopied] = useState(false);
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3500);
+  };
 
   // New Item Modals / Forms
   const [newNotice, setNewNotice] = useState<Partial<NoticeItem>>({
@@ -228,7 +234,7 @@ export function AdminView({
   const handleTestSync = async () => {
     const url = settingsForm.googleAppsScriptUrl || settingsForm.googleSheetWebAppUrl;
     if (!url) {
-      alert('অনুগ্রহ করে আগে Google Apps Script Web App URL টি দিন।');
+      showToast('অনুগ্রহ করে আগে Google Apps Script Web App URL টি দিন।', 'error');
       return;
     }
     setIsSyncing(true);
@@ -293,7 +299,7 @@ export function AdminView({
   const handleAddResult = (e: FormEvent) => {
     e.preventDefault();
     if (!newResult.rollNumber || !newResult.studentName) {
-      alert('অনুগ্রহ করে রোল নম্বর এবং ছাত্রের নাম প্রদান করুন।');
+      showToast('অনুগ্রহ করে রোল নম্বর এবং ছাত্রের নাম প্রদান করুন।', 'error');
       return;
     }
     const selectedDept = jamaats.find(j => j.name === newResult.jamaat)?.department || 'হিফজ ও কিতাব বিভাগ';
@@ -353,7 +359,7 @@ export function AdminView({
   const handleAddBlog = (e: FormEvent) => {
     e.preventDefault();
     if (!newBlog.title || !newBlog.content) {
-      alert('অনুগ্রহ করে ব্লগের শিরোনাম এবং বক্তব্য লিখুন।');
+      showToast('অনুগ্রহ করে ব্লগের শিরোনাম এবং বক্তব্য লিখুন।', 'error');
       return;
     }
     const post: BlogPost = {
@@ -389,7 +395,7 @@ export function AdminView({
   const handleAddGallery = (e: FormEvent) => {
     e.preventDefault();
     if (!newGallery.title || !newGallery.imageUrl) {
-      alert('অনুগ্রহ করে ছবির শিরোনাম এবং Google Drive ইমেজ লিঙ্ক বা আইডি দিন।');
+      showToast('অনুগ্রহ করে ছবির শিরোনাম এবং Google Drive ইমেজ লিঙ্ক বা আইডি দিন।', 'error');
       return;
     }
     const item: GalleryItem = {
@@ -418,7 +424,7 @@ export function AdminView({
   const handleAddJamaat = (e: FormEvent) => {
     e.preventDefault();
     if (!newJamaat.name) {
-      alert('অনুগ্রহ করে জামাতের নাম লিখুন।');
+      showToast('অনুগ্রহ করে জামাতের নাম লিখুন।', 'error');
       return;
     }
     const created: JamaatItem = {
@@ -472,7 +478,7 @@ export function AdminView({
   const handleAddSlider = (e: FormEvent) => {
     e.preventDefault();
     if (!newSliderItem.title || !newSliderItem.imageUrl) {
-      alert('স্লাইডারের শিরোনাম এবং ছবির লিংক প্রদান করুন।');
+      showToast('স্লাইডারের শিরোনাম এবং ছবির লিংক প্রদান করুন।', 'error');
       return;
     }
     const item: SliderImageItem = {
@@ -529,7 +535,7 @@ export function AdminView({
   const handleAddTeacher = (e: FormEvent) => {
     e.preventDefault();
     if (!newTeacherItem.name || !newTeacherItem.designation) {
-      alert('শিক্ষকের নাম এবং পদবি প্রদান করুন।');
+      showToast('শিক্ষকের নাম এবং পদবি প্রদান করুন।', 'error');
       return;
     }
     const item: TeacherItem = {
@@ -2739,6 +2745,26 @@ export function AdminView({
               );
             })}
           </div>
+        </div>
+      )}
+
+      {/* Floating Toast Notification */}
+      {toast && (
+        <div 
+          className={`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-2xl shadow-2xl border flex items-center gap-3 text-sm font-semibold animate-in fade-in slide-in-from-bottom-4 duration-200 ${
+            toast.type === 'error' 
+              ? 'bg-rose-950 text-rose-100 border-rose-800' 
+              : toast.type === 'success' 
+              ? 'bg-emerald-950 text-emerald-100 border-emerald-800' 
+              : 'bg-slate-900 text-white border-slate-700'
+          }`}
+        >
+          {toast.type === 'error' ? (
+            <AlertCircle className="w-5 h-5 text-rose-400 shrink-0" />
+          ) : (
+            <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+          )}
+          <span>{toast.message}</span>
         </div>
       )}
 

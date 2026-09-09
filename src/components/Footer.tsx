@@ -8,25 +8,15 @@ import {
   Building2, 
   Phone, 
   Mail, 
-  MapPin, 
   HeartHandshake, 
   GraduationCap, 
   BookOpen, 
-  Lock, 
-  ChevronRight, 
   Home, 
   Award, 
   FileText, 
   Image, 
-  ScrollText, 
   Info, 
-  Compass, 
-  ArrowRight, 
-  Sparkles,
-  Facebook,
-  Youtube,
-  MessageCircle,
-  Send
+  Compass
 } from 'lucide-react';
 import { NavigationTab, SiteSettings } from '../types';
 import { formatDriveImageUrl, THEME_PALETTES } from '../utils/imageUtils';
@@ -46,7 +36,7 @@ export function Footer({ onNavigate, settings }: FooterProps) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Dedicated quick shortcuts list for footer
+  // Dedicated quick shortcuts list for footer (excluding student rules and admin panel)
   const quickShortcuts: { id: NavigationTab; label: string; icon: any; isHighlight?: boolean; badge?: string }[] = [
     { id: 'home', label: 'হোম পেজ', icon: Home },
     { id: 'admission', label: 'ভর্তি আবেদন ফরম', icon: GraduationCap, isHighlight: true, badge: 'চলমান' },
@@ -55,16 +45,13 @@ export function Footer({ onNavigate, settings }: FooterProps) {
     { id: 'syllabus', label: 'সিলেবাস ও কিতাব', icon: BookOpen },
     { id: 'campus', label: 'ক্যাম্পাস পরিচিতি', icon: Building2 },
     { id: 'about', label: 'আমাদের সম্পর্কে', icon: Info },
-    { id: 'rules', label: 'শিক্ষার্থী নীতিমালা', icon: ScrollText },
     { id: 'khidmat-fund', label: 'খেদমত ফান্ড', icon: HeartHandshake, badge: 'দান' },
     { id: 'gallery', label: 'ফটোগ্যালারি', icon: Image },
     { id: 'blog', label: 'ইসলামিক প্রবন্ধ ও ব্লগ', icon: FileText },
     { id: 'contact', label: 'যোগাযোগ ও ম্যাপ', icon: Phone },
-    { id: 'admin', label: 'এডমিন প্যানেল', icon: Lock },
   ];
 
   // Clean numbers for links
-  const cleanPhone = (settings.phonePrimary || '01712000000').replace(/[^0-9]/g, '');
   const rawWhatsapp = settings.whatsappNumber || settings.phonePrimary || '';
   const cleanWhatsapp = rawWhatsapp.replace(/[^0-9]/g, '');
   const whatsappUrl = cleanWhatsapp 
@@ -75,47 +62,67 @@ export function Footer({ onNavigate, settings }: FooterProps) {
   const facebookUrl = settings.facebookPageUrl || 'https://facebook.com';
   const youtubeUrl = settings.youtubeUrl || 'https://youtube.com';
 
-  // Social channels list (Icons only - no text labels)
+  // Authentic, modern updated social media channels with custom SVG logos
   const socialChannels = [
     {
       id: 'facebook',
-      name: 'Facebook',
-      icon: Facebook,
+      name: 'Facebook Page',
       href: facebookUrl,
-      hoverColor: 'hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2]',
-      bgColor: 'bg-blue-600/15 text-blue-400 border-blue-500/30',
+      hoverClass: 'hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2] hover:shadow-lg hover:shadow-[#1877F2]/30',
+      bgClass: 'bg-[#1877F2]/15 text-[#2b87ff] border-[#1877F2]/30',
+      iconSvg: (
+        <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+        </svg>
+      )
     },
     {
       id: 'youtube',
-      name: 'YouTube',
-      icon: Youtube,
+      name: 'YouTube Channel',
       href: youtubeUrl,
-      hoverColor: 'hover:bg-[#FF0000] hover:text-white hover:border-[#FF0000]',
-      bgColor: 'bg-red-600/15 text-red-400 border-red-500/30',
+      hoverClass: 'hover:bg-[#FF0000] hover:text-white hover:border-[#FF0000] hover:shadow-lg hover:shadow-[#FF0000]/30',
+      bgClass: 'bg-[#FF0000]/15 text-[#ff4b4b] border-[#FF0000]/30',
+      iconSvg: (
+        <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+        </svg>
+      )
     },
     {
       id: 'whatsapp',
       name: 'WhatsApp',
-      icon: MessageCircle,
       href: whatsappUrl,
-      hoverColor: 'hover:bg-[#25D366] hover:text-white hover:border-[#25D366]',
-      bgColor: 'bg-emerald-600/15 text-emerald-400 border-emerald-500/30',
+      hoverClass: 'hover:bg-[#25D366] hover:text-white hover:border-[#25D366] hover:shadow-lg hover:shadow-[#25D366]/30',
+      bgClass: 'bg-[#25D366]/15 text-[#34e275] border-[#25D366]/30',
+      iconSvg: (
+        <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+          <path d="M12.031 0C5.394 0 0 5.393 0 12.031c0 2.118.552 4.187 1.603 6.01L.062 24l6.148-1.613c1.767.964 3.766 1.472 5.82 1.472 6.637 0 12.03-5.393 12.03-12.028C24.06 5.393 18.668 0 12.031 0zm0 22.028c-1.797 0-3.559-.483-5.1-1.398l-.366-.217-3.791.994 1.012-3.696-.238-.378a9.97 9.97 0 0 1-1.536-5.302c0-5.525 4.495-10.02 10.02-10.02 5.524 0 10.019 4.495 10.019 10.02 0 5.524-4.495 10.019-10.02 10.019zm5.495-7.509c-.301-.151-1.782-.879-2.058-.979-.276-.101-.477-.151-.678.151-.201.302-.779.979-.955 1.18-.176.201-.352.226-.653.076-.301-.151-1.272-.469-2.423-1.496-.896-.799-1.501-1.787-1.677-2.088-.176-.302-.019-.465.132-.615.136-.135.301-.352.452-.527.151-.176.201-.301.302-.503.1-.201.05-.377-.025-.528-.076-.151-.678-1.633-.929-2.236-.244-.588-.493-.508-.678-.518l-.578-.01c-.201 0-.527.075-.803.377-.276.301-1.054 1.03-1.054 2.511 0 1.481 1.079 2.912 1.23 3.113.151.201 2.124 3.243 5.145 4.549.718.311 1.279.497 1.716.636.721.229 1.377.197 1.895.12.577-.086 1.782-.728 2.033-1.431.251-.703.251-1.306.176-1.431-.075-.126-.276-.201-.577-.352z"/>
+        </svg>
+      )
     },
     {
       id: 'email',
-      name: 'Email',
-      icon: Mail,
+      name: 'Email Address',
       href: emailUrl,
-      hoverColor: 'hover:bg-amber-500 hover:text-slate-950 hover:border-amber-500',
-      bgColor: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+      hoverClass: 'hover:bg-amber-500 hover:text-slate-950 hover:border-amber-500 hover:shadow-lg hover:shadow-amber-500/30',
+      bgClass: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+      iconSvg: (
+        <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+          <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+        </svg>
+      )
     },
     {
       id: 'phone',
-      name: 'Helpline Phone',
-      icon: Phone,
+      name: 'Helpline Call',
       href: phoneUrl,
-      hoverColor: 'hover:bg-teal-600 hover:text-white hover:border-teal-600',
-      bgColor: 'bg-teal-600/15 text-teal-400 border-teal-500/30',
+      hoverClass: 'hover:bg-emerald-600 hover:text-white hover:border-emerald-600 hover:shadow-lg hover:shadow-emerald-600/30',
+      bgClass: 'bg-emerald-600/15 text-emerald-400 border-emerald-500/30',
+      iconSvg: (
+        <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+          <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+        </svg>
+      )
     },
   ];
 
@@ -140,7 +147,7 @@ export function Footer({ onNavigate, settings }: FooterProps) {
           <div className="flex flex-wrap items-center justify-center gap-3">
             <button
               onClick={() => handleNav('admission')}
-              className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm rounded-xl shadow-md transition-all flex items-center gap-2 hover:scale-105"
+              className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm rounded-xl shadow-md transition-all flex items-center gap-2 hover:scale-105 cursor-pointer"
               id="footer-cta-admission-btn"
             >
               <GraduationCap className="w-4 h-4" />
@@ -148,7 +155,7 @@ export function Footer({ onNavigate, settings }: FooterProps) {
             </button>
             <button
               onClick={() => handleNav('khidmat-fund')}
-              className="px-5 py-2.5 bg-white/15 hover:bg-white/25 text-white font-bold text-sm rounded-xl border border-white/20 transition-all flex items-center gap-2 hover:scale-105"
+              className="px-5 py-2.5 bg-white/15 hover:bg-white/25 text-white font-bold text-sm rounded-xl border border-white/20 transition-all flex items-center gap-2 hover:scale-105 cursor-pointer"
               id="footer-cta-donation-btn"
             >
               <HeartHandshake className="w-4 h-4 text-amber-300" />
@@ -158,7 +165,7 @@ export function Footer({ onNavigate, settings }: FooterProps) {
         </div>
       </div>
 
-      {/* 2. DEDICATED QUICK SHORTCUTS SECTION (ফুটার এ ও শর্ট কার্ট থাকবে - কম্প্যাক্ট ও আকর্ষণীয়) */}
+      {/* 2. DEDICATED QUICK SHORTCUTS SECTION */}
       <div className="bg-slate-950/90 border-b border-slate-800/80 py-6 px-4 sm:px-6 lg:px-8" id="footer-shortcuts-section">
         <div className="max-w-7xl mx-auto">
           
@@ -178,11 +185,11 @@ export function Footer({ onNavigate, settings }: FooterProps) {
             </div>
 
             <span className="text-[10px] text-amber-300/90 font-medium bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
-              ১৩টি গুরুত্বপূর্ণ শর্টকাট
+              {quickShortcuts.length}টি গুরুত্বপূর্ণ শর্টকাট
             </span>
           </div>
 
-          {/* Compact & Attractive Quick Shortcut Buttons Grid */}
+          {/* Compact Quick Shortcut Buttons Grid */}
           <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-2">
             {quickShortcuts.map((item) => {
               const Icon = item.icon;
@@ -223,202 +230,119 @@ export function Footer({ onNavigate, settings }: FooterProps) {
         </div>
       </div>
 
-      {/* 3. MAIN FOOTER CONTENT (৪ কলাম বিস্তারিত তথ্য) */}
+      {/* 3. MAIN FOOTER CONTENT */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* Column 1: Madrasa Overview with Auto-Updating Logo */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
+          {/* Column 1: Madrasa Overview, Founder & Social Media Icons */}
+          <div className="lg:col-span-7 space-y-4">
+            <div className="flex items-center gap-3.5">
               {logoSrc && !logoError ? (
                 <img
                   src={logoSrc}
                   alt={settings.madrasaNameBn}
                   onError={() => setLogoError(true)}
-                  className="w-11 h-11 rounded-lg object-cover border border-amber-500/40 shadow-sm"
+                  className="w-12 h-12 rounded-xl object-cover border border-amber-500/40 shadow-sm"
                   referrerPolicy="no-referrer"
                 />
               ) : (
-                <div className="w-11 h-11 rounded-lg bg-emerald-800 text-amber-300 flex items-center justify-center font-arabic text-xl font-bold border border-emerald-600/40">
+                <div className="w-12 h-12 rounded-xl bg-emerald-800 text-amber-300 flex items-center justify-center font-arabic text-2xl font-bold border border-emerald-600/40 shadow-sm">
                   م
                 </div>
               )}
               <div>
-                <h4 className="font-bold text-white text-base font-serif">{settings.madrasaNameBn}</h4>
-                <p className="text-xs text-slate-400">{settings.madrasaNameEn}</p>
+                <h4 className="font-bold text-white text-lg font-serif tracking-tight">{settings.madrasaNameBn}</h4>
+                <p className="text-xs text-slate-400 font-sans">{settings.madrasaNameEn}</p>
               </div>
             </div>
-            <p className="text-xs leading-relaxed text-slate-400">
+
+            <p className="text-xs sm:text-sm leading-relaxed text-slate-400 max-w-2xl">
               {settings.establishedDate}-এ প্রতিষ্ঠিত ঐতিহ্যবাহী দ্বীনি বিদ্যাপীঠ। আন্তর্জাতিক মানসম্মত হিফজুল কুরআন এবং দাওরায়ে হাদীস (মাস্টার্স) পর্যন্ত কিতাব বিভাগের নির্ভরযোগ্য প্রতিষ্ঠান।
             </p>
+
+            {/* Founder Info */}
             <div className="pt-1">
-              <p className="text-xs text-slate-400">
-                <strong className="text-slate-300">প্রতিষ্ঠাতা:</strong> {settings.founderName}
+              <p className="text-xs sm:text-sm text-slate-300">
+                <strong className="text-amber-400 font-semibold">প্রতিষ্ঠাতা:</strong> {settings.founderName}
               </p>
             </div>
 
-            {/* Column 1 Social Media Icons (Icons only - no text) */}
-            <div className="pt-2">
-              <div className="flex flex-wrap items-center gap-2">
-                {socialChannels.map((channel) => {
-                  const Icon = channel.icon;
-                  return (
-                    <a
-                      key={`col1-${channel.id}`}
-                      href={channel.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`w-9 h-9 rounded-xl border transition-all duration-200 flex items-center justify-center ${channel.bgColor} ${channel.hoverColor} hover:scale-110 active:scale-95 shadow-xs`}
-                      title={channel.name}
-                      aria-label={channel.name}
-                      id={`footer-social-icon-${channel.id}`}
-                    >
-                      <Icon className="w-4 h-4" />
-                    </a>
-                  );
-                })}
+            {/* প্রতিষ্ঠাতা টেক্সট এর নিচে শুধু সোশ্যাল মিডিয়া ও যোগাযোগ আইকন */}
+            <div className="pt-3">
+              <div className="flex flex-wrap items-center gap-2.5">
+                {socialChannels.map((channel) => (
+                  <a
+                    key={`footer-founder-social-${channel.id}`}
+                    href={channel.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`w-10 h-10 rounded-xl border transition-all duration-200 flex items-center justify-center ${channel.bgClass} ${channel.hoverClass} hover:scale-110 active:scale-95 shadow-xs`}
+                    title={channel.name}
+                    aria-label={channel.name}
+                    id={`footer-founder-icon-${channel.id}`}
+                  >
+                    {channel.iconSvg}
+                  </a>
+                ))}
               </div>
             </div>
           </div>
 
-          {/* Column 2: Campuses Info */}
-          <div className="space-y-3">
-            <h4 className="font-bold text-white text-sm font-serif border-b border-slate-800 pb-2 flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-amber-400" />
-              <span>আমাদের ক্যাম্পাসসমূহ</span>
-            </h4>
-            
-            <div className="bg-slate-800/60 p-3 rounded-lg border border-slate-700/50 space-y-1">
-              <span className="text-xs font-semibold text-amber-400 block">
-                অস্থায়ী ক্যাম্পাস (যাত্রাবাড়ী):
-              </span>
-              <p className="text-xs text-slate-300 flex items-start gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
-                <span>{settings.addressTemporary}</span>
-              </p>
-            </div>
-
-            <div className="bg-slate-800/60 p-3 rounded-lg border border-slate-700/50 space-y-1">
-              <span className="text-xs font-semibold text-emerald-400 block">
-                স্থায়ী ক্যাম্পাস (ডেমরা):
-              </span>
-              <p className="text-xs text-slate-300 flex items-start gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
-                <span>{settings.addressPermanent}</span>
-              </p>
-            </div>
-          </div>
-
-          {/* Column 3: Quick Navigation */}
-          <div className="space-y-3">
-            <h4 className="font-bold text-white text-sm font-serif border-b border-slate-800 pb-2 flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-amber-400" />
-              <span>গুরুত্বপূর্ণ লিংকসমূহ</span>
-            </h4>
-            <ul className="grid grid-cols-2 gap-2 text-xs">
-              {[
-                { id: 'notices', label: 'নোটিশ বোর্ড' },
-                { id: 'results', label: 'পরীক্ষার ফলাফল' },
-                { id: 'syllabus', label: 'সিলেবাস ও বই' },
-                { id: 'rules', label: 'নিয়ম-কানুন' },
-                { id: 'campus', label: 'ক্যাম্পাস পরিচিতি' },
-                { id: 'blog', label: 'ইসলামিক ব্লগ' },
-                { id: 'gallery', label: 'ফটোগ্যালারি' },
-                { id: 'about', label: 'আমাদের সম্পর্কে' },
-                { id: 'contact', label: 'যোগাযোগ ও ম্যাপ' },
-              ].map((link) => (
-                <li key={link.id}>
-                  <button
-                    onClick={() => handleNav(link.id as NavigationTab)}
-                    className="text-slate-400 hover:text-amber-300 transition-colors flex items-center gap-1 text-left"
-                    id={`footer-link-${link.id}`}
-                  >
-                    <ChevronRight className="w-3 h-3 text-slate-500" />
-                    <span>{link.label}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Column 4: Contact & Donation Info */}
-          <div className="space-y-3">
-            <h4 className="font-bold text-white text-sm font-serif border-b border-slate-800 pb-2 flex items-center gap-2">
+          {/* Column 2: Contact & Donation Info */}
+          <div className="lg:col-span-5 space-y-4 bg-slate-800/40 p-5 rounded-2xl border border-slate-800/80">
+            <h4 className="font-bold text-white text-sm sm:text-base font-serif border-b border-slate-700/60 pb-2.5 flex items-center gap-2">
               <Phone className="w-4 h-4 text-amber-400" />
               <span>যোগাযোগ ও অনুদান</span>
             </h4>
             
-            <div className="space-y-2 text-xs text-slate-300">
-              <p className="flex items-center gap-2">
-                <Phone className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                <a href={`tel:${settings.phonePrimary}`} className="hover:text-white">
+            <div className="space-y-2.5 text-xs sm:text-sm text-slate-300">
+              <p className="flex items-center gap-2.5">
+                <Phone className="w-4 h-4 text-amber-400 shrink-0" />
+                <a href={`tel:${settings.phonePrimary}`} className="hover:text-amber-300 transition-colors">
                   {settings.phonePrimary}
                 </a>
-                <span>/</span>
-                <a href={`tel:${settings.phoneSecondary}`} className="hover:text-white">
-                  {settings.phoneSecondary}
-                </a>
+                {settings.phoneSecondary && (
+                  <>
+                    <span className="text-slate-500">/</span>
+                    <a href={`tel:${settings.phoneSecondary}`} className="hover:text-amber-300 transition-colors">
+                      {settings.phoneSecondary}
+                    </a>
+                  </>
+                )}
               </p>
-              <p className="flex items-center gap-2">
-                <Mail className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                <a href={`mailto:${settings.emailAddress || settings.email}`} className="hover:text-white truncate">
+              <p className="flex items-center gap-2.5">
+                <Mail className="w-4 h-4 text-amber-400 shrink-0" />
+                <a href={`mailto:${settings.emailAddress || settings.email}`} className="hover:text-amber-300 transition-colors truncate">
                   {settings.emailAddress || settings.email}
                 </a>
               </p>
             </div>
 
-            <div className="bg-slate-800/80 p-2.5 rounded border border-slate-700/60 text-[11px] text-slate-300">
-              <span className="font-semibold block text-amber-400 mb-0.5">বিকাশ / নগদ অনুদান:</span>
-              <p className="font-mono text-xs text-amber-300 font-semibold">{settings.bkashNumber.split(' ')[0]}</p>
-              <span className="text-[10px] text-slate-400">রেফারেন্স: "Zakat" বা "Khedmat"</span>
+            <div className="bg-slate-900/80 p-3 rounded-xl border border-slate-700/60 text-xs text-slate-300">
+              <span className="font-semibold block text-amber-400 mb-1">বিকাশ / নগদ অনুদান (মারকাযুল ইহসান):</span>
+              <p className="font-mono text-sm text-amber-300 font-bold tracking-wider">{settings.bkashNumber.split(' ')[0]}</p>
+              <span className="text-[11px] text-slate-400 block mt-0.5">রেফারেন্স: "Zakat" বা "Khedmat"</span>
             </div>
           </div>
 
         </div>
 
-        {/* Bottom Bar with Social Media Icons Only (No text) */}
-        <div className="mt-10 pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
-          <p>© ২০১৮ - {new Date().getFullYear()} {settings.madrasaNameBn} ({settings.madrasaNameEn})। সর্বস্বত্ব সংরক্ষিত।</p>
-          
-          {/* সোশ্যাল মিডিয়া লিংক এর শুধু আইকন - কোনো টেক্সট ছাড়া */}
-          <div className="flex items-center gap-2" id="footer-social-icons-only">
-            {socialChannels.map((channel) => {
-              const Icon = channel.icon;
-              return (
-                <a
-                  key={`footer-bottom-icon-${channel.id}`}
-                  href={channel.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`w-8 h-8 rounded-lg border transition-all duration-200 flex items-center justify-center ${channel.bgColor} ${channel.hoverColor} hover:scale-110 active:scale-95`}
-                  title={channel.name}
-                  aria-label={channel.name}
-                  id={`footer-icon-${channel.id}`}
-                >
-                  <Icon className="w-4 h-4" />
-                </a>
-              );
-            })}
-          </div>
-
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => handleNav('rules')}
-              className="hover:text-slate-200 transition-colors"
+        {/* Bottom Bar: Centered Copyright and Developer Credit */}
+        <div className="mt-10 pt-6 border-t border-slate-800/80 flex flex-col items-center justify-center text-center gap-2 text-xs text-slate-400">
+          <p className="text-slate-300 font-medium">
+            © ২০১৮ - 2026 আস সুন্নাহ মডেল মাদ্রাসা (Ass Sunnah Model Madrasa )। সর্বস্বত্ব সংরক্ষিত।
+          </p>
+          <p className="text-[11px] text-slate-400 flex items-center justify-center gap-1.5">
+            <span>ডেভলপার:</span>
+            <a
+              href="https://www.facebook.com/mdarifulislam15"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-amber-400 hover:text-amber-300 font-semibold underline underline-offset-2 transition-colors inline-flex items-center gap-1"
             >
-              শিক্ষার্থী নীতিমালা
-            </button>
-            <span>•</span>
-            <button
-              onClick={() => handleNav('admin')}
-              className="hover:text-amber-400 transition-colors flex items-center gap-1.5 py-1 px-2.5 rounded bg-slate-800/50 hover:bg-slate-800 border border-slate-700/60"
-              title="মাদরাসা এডমিন কন্ট্রোল"
-              id="footer-admin-link"
-            >
-              <Lock className="w-3 h-3 text-slate-400" />
-              <span>এডমিন প্যানেল</span>
-            </button>
-          </div>
+              <span>আরিফুল ইসলাম</span>
+            </a>
+          </p>
         </div>
 
       </div>

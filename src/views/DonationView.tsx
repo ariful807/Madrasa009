@@ -9,7 +9,8 @@ import {
   FileText, 
   Send, 
   Printer,
-  Sparkles
+  Sparkles,
+  AlertCircle
 } from 'lucide-react';
 import { SiteSettings, DonationRecord } from '../types';
 import { storageService } from '../services/storageService';
@@ -20,6 +21,7 @@ interface DonationViewProps {
 
 export function DonationView({ settings }: DonationViewProps) {
   const [copiedType, setCopiedType] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     donorName: '',
@@ -43,12 +45,13 @@ export function DonationView({ settings }: DonationViewProps) {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    setFormError(null);
     if (!formData.amount || Number(formData.amount) <= 0) {
-      alert('অনুগ্রহ করে সঠিক অনুদানের পরিমাণ লিখুন।');
+      setFormError('অনুগ্রহ করে সঠিক অনুদানের পরিমাণ লিখুন।');
       return;
     }
     if (!formData.donorPhone) {
-      alert('অনুগ্রহ করে মোবাইল নম্বর প্রদান করুন।');
+      setFormError('অনুগ্রহ করে মোবাইল নম্বর প্রদান করুন।');
       return;
     }
 
@@ -83,7 +86,7 @@ export function DonationView({ settings }: DonationViewProps) {
       });
     } catch (err) {
       console.error(err);
-      alert('অনুদান তথ্য সংরক্ষণ করতে সমস্যা হয়েছে।');
+      setFormError('অনুদান তথ্য সংরক্ষণ করতে সমস্যা হয়েছে।');
     } finally {
       setIsSubmitting(false);
     }
@@ -277,6 +280,12 @@ export function DonationView({ settings }: DonationViewProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4" id="donation-confirmation-form">
+          {formError && (
+            <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl text-xs sm:text-sm font-semibold text-rose-800 flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 shrink-0 text-rose-600" />
+              <span>{formError}</span>
+            </div>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
